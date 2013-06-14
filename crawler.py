@@ -21,12 +21,12 @@ class getList(SGMLParser):
             self.name.append(data)
 
 content = urllib2.urlopen("http://list.taobao.com/browse/cat-0.htm").read()
-#listname = getList()
-#listname.feed(content)
-#for item in listname.name:
-#    print item.decode('gbk').encode('utf-8')
+listname = getList()
+listname.feed(content)
+for item in listname.name:
+    print item.decode('gbk').encode('utf-8')
 #print content
-file_handler = open('taobao_content','w')
+#file_handler = open('taobao_content','w')
 
-file_handler.write(content.decode('gbk').encode('utf-8'))
-file_handler.close()
+#file_handler.write(content.decode('gbk').encode('utf-8'))
+#file_handler.close()
