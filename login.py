@@ -77,8 +77,8 @@ def sina_login():
                 'url' : 'http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack',
                 'returntype' : 'META'
     }
-    username = 'zhjsoftware@gmail.com'
-    pwd = '870912zz'
+    username = ''
+    pwd = ''
     url = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.3.18)'
     try:
         servertime, nonce = get_servertime()
@@ -105,7 +105,7 @@ def sina_login():
 
 
 if __name__ == "__main__":
-#    print renren_login("zhoujing19871025@126.com","870912zz")
+#    print renren_login("","")
     sina_login()
 
 
