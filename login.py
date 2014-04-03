@@ -15,7 +15,7 @@ def renren_login(user, passwd):
     try:
         cj = cookielib.LWPCookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-        opener.addheaders = [('User-agent','Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)')]
+        opener.addheaders = [('User-Agent','Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)')]
         data = urllib.urlencode({"email":user,"password":passwd})
         urllib2.install_opener(opener)
         opener.open(loginurl,data)
@@ -77,8 +77,8 @@ def sina_login():
                 'url' : 'http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack',
                 'returntype' : 'META'
     }
-    username = ''
-    pwd = ''
+    username = 'zhjsoftware@gmail.com'
+    pwd = '870912zz'
     url = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.3.18)'
     try:
         servertime, nonce = get_servertime()
@@ -98,7 +98,7 @@ def sina_login():
     try:
         login_url = p.search(text).group(1)
         print login_url
-        urllib2.urlopen(login_url)
+        response = urllib2.urlopen(login_url)
         print 'login succeed!'
     except :
         print 'login error.'
