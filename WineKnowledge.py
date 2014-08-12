@@ -6,6 +6,7 @@ from Queue import Queue
 import time
 import threading
 import thread
+import random
 import codecs
 
 
@@ -35,7 +36,6 @@ class KnowledgeContentParser(SGMLParser):
 
     def __init__(self):
         SGMLParser.__init__(self)
-        self.template = '"title": "{0}","date":"{1}", "content":"{2}"'
         self.records = []
 
     def reset(self):
@@ -48,6 +48,7 @@ class KnowledgeContentParser(SGMLParser):
         self.title = ''
         self.remark = ''
         self.contents = []
+
 
     def start_h2(self, attrs):
         self.is_h2 = 1
@@ -82,7 +83,9 @@ class KnowledgeContentParser(SGMLParser):
         if self.is_em and self.is_p == 1 and self.is_remark:
             self.remark = data
         if self.is_em and self.is_p == 1 and self.is_content == 1:
-            self.contents.append(data)
+            if len(self.contents) > 0:
+                self.contents.append(u'\n')
+            self.contents.append(data.decode('utf-8'))
 
     def summarize(self):
         if isinstance(self.title, unicode):
@@ -95,7 +98,7 @@ class KnowledgeContentParser(SGMLParser):
             recordRemark = unicode(self.remark.split('|')[0], 'utf-8')
         if len(self.contents) > 0:
             if isinstance(self.contents[0], unicode):
-                recordContent = '\n'.join(self.contents)
+                recordContent = ''.join(self.contents)
             else:
                 recordContent = unicode(''.join(self.contents), 'utf-8')
             record = '"title": "' + recordTitle + '", "date": "' + recordRemark + '", "content": "' + recordContent + '"'
@@ -131,7 +134,6 @@ class BrandContentParser(SGMLParser):
 
     def __init__(self):
         SGMLParser.__init__(self)
-        self.template = '"title": "{0}","date":"{1}", "content":"{2}"'
         self.records = []
 
     def reset(self):
@@ -178,7 +180,9 @@ class BrandContentParser(SGMLParser):
         if self.is_em and self.is_p == 1 and self.is_remark:
             self.remark = data
         if self.is_em and self.is_p == 1 and self.is_content == 1:
-            self.contents.append(data)
+            if len(self.contents) > 0:
+                self.contents.append(u'\n')
+            self.contents.append(data.decode('utf-8'))
 
     def summarize(self):
         if isinstance(self.title, unicode):
@@ -191,9 +195,9 @@ class BrandContentParser(SGMLParser):
             recordRemark = unicode(self.remark.split('|')[0], 'utf-8')
         if len(self.contents) > 0:
             if isinstance(self.contents[0], unicode):
-                recordContent = '\n'.join(self.contents)
+                recordContent = ''.join(self.contents)
             else:
-                recordContent = unicode(''.join(self.contents), 'utf-8')
+                recordContent = (''.join(self.contents)).decode('utf-8')
             record = '"title": "' + recordTitle + '", "date": "' + recordRemark + '", "content": "' + recordContent + '"'
             self.records.append(record)
         self.title = ''
@@ -202,9 +206,11 @@ class BrandContentParser(SGMLParser):
 
 
 def loadKnowledgeLink(url, parser):
-    pageNum = 1
+    pageNum = 12
     global knowledgeLastPage
     while not knowledgeLastPage:
+        wait = random.randint(30, 60)
+        time.sleep(wait)
         actualUrl = url + str(pageNum)
         req = urllib2.Request(actualUrl, headers=header)
         try:
@@ -215,6 +221,8 @@ def loadKnowledgeLink(url, parser):
         except urllib2.HTTPError, e:
             if hasattr(e, 'code') and e.code == 404:
                 knowledgeLastPage = True
+            if hasattr(e, 'reason'):
+                print 'load knowledge link error:' + e.reason
 
 
 def loadBrandLink(url, parser):
@@ -231,7 +239,8 @@ def loadBrandLink(url, parser):
         except urllib2.HTTPError, e:
             if hasattr(e, 'code') and e.code == 404:
                 brandLastPage = True
-
+            if hasattr(e, 'reason'):
+                print 'load brand link error:' + e.reason
 
 def loadKnowledgeContent(parser):
     global knowledgeLinkQueue
@@ -244,6 +253,8 @@ def loadKnowledgeContent(parser):
                 detailUrl = knowledgeLinkQueue.get()
             knowledgeLock.release()
             req = urllib2.Request(detailUrl, headers=header)
+            wait = random.randint(1, 6)
+            time.sleep(wait)
             try:
                 response = urllib2.urlopen(req)
                 text = response.read()
@@ -269,6 +280,7 @@ def loadBrandContent(parser):
             if brandLock.acquire():
                 detailUrl = brandLinkQueue.get()
             brandLock.release()
+            print detailUrl
             req = urllib2.Request(detailUrl, headers=header)
             try:
                 response = urllib2.urlopen(req)
@@ -300,40 +312,64 @@ thread1Running = True
 thread2Running = True
 seedUrl1 = 'http://www.ncvop.com/post/category/wine-knowledge/page/'
 seedUrl2 = "http://www.ncvop.com/post/category/wine-brands/page/"
-header = {"UserAgent": "Mozilla/5.0 (X11; Linux i686; rv:8.0) Gecko/20100101 Firefox/8.0"}
+header = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+          'Accept': 'text/html;q=0.9,*/*;q=0.8',
+          'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+          'Connection': 'close',
+          'Referer': None}
 thread.start_new_thread(loadKnowledgeLink, (seedUrl1, knowledgeParser))
-time.sleep(1)
+# thread.start_new_thread(loadBrandLink, (seedUrl2, brandLinkParser))
+time.sleep(2)
 thread.start_new_thread(loadKnowledgeContent, (knowledgeContentParser,))
-thread.start_new_thread(loadBrandLink, (seedUrl2, brandLinkParser))
-thread.start_new_thread(loadBrandContent, (brandContentParser,))
-# time.sleep(1)
+while not knowledgeLastPage:
+    time.sleep(5)
+# thread.start_new_thread(loadBrandContent, (brandContentParser,))
 # while threading.activeCount() != 1:
 #     time.sleep(10)
-# time.sleep(5)
-while thread1Running:
-    time.sleep(10)
+# while thread1Running:
+#     time.sleep(5)
+# print brandLinkQueue.qsize()
 with codecs.open("/home/jing/data/knowledge.txt", "a", 'utf-8') as knowledgeFile:
     for record in knowledgeContentParser.records:
         knowledgeFile.write(record)
         knowledgeFile.write('\n')
-with codecs.open('/home/jing/data/brand.txt','a','utf-8') as brandFile:
-    for record in brandContentParser.records:
-        brandFile.write(record)
-        brandFile.write('\n')
-# print brandLinkQueue.qsize()
-# url = 'http://www.ncvop.com/post/682.html'
+# with codecs.open('/home/jing/data/brand.txt', 'a', 'utf-8') as brandFile:
+#     for record in brandContentParser.records:
+#         brandFile.write(record)
+#         brandFile.write('\n')
+# url = 'http://www.ncvop.com/post/1098.html'
+# url = "http://www.ncvop.com/post/category/wine-knowledge"
 # req = urllib2.Request(url, headers=header)
-# response = urllib2.urlopen(req)
-# s = '\xe8\x91\xa1\xe8\x90\x84\xe9\x85\x92\xe4\xb8\x8e\xe9\xa3\x9f\xe7\x89\xa9\xe7\x9a\x84\xe6\x90\xad\xe9\x85\x8d\xe5\x8e\x9f\xe5\x88\x99'
-# y=u'abc | cde'
-# print type(s)
-# print y.split("|")[0]
-# print type(unicode(s, 'utf-8'))
-# print isinstance(response.read(), unicode)
-# knowledgeContentParser.feed(response.read())
+# try:
+#     response = urllib2.urlopen(req)
+#     text = response.read()
+#     knowledgeParser.feed(text)
+# except urllib2.HTTPError, e:
+#     if hasattr(e, 'reason'):
+#         print 'url: ' + seedUrl1 + " not reachable. Reason: " + e.reason
+# except AttributeError, e:
+#     print e.message
+# while not knowledgeLinkQueue.empty():
+#     print knowledgeLinkQueue.get()
+
+# try:
+#     response = urllib2.urlopen(req)
+#     knowledgeContentParser.feed(response.read())
+# except urllib2.HTTPError, e:
+#     if hasattr(e, "reason"):
+#         print 'url: ' + seedUrl1 + " not reachable. Reason: " + e.reason
+# except AttributeError, e:
+#     print e.message
 # print knowledgeContentParser.title
 # print knowledgeContentParser.remark
 # knowledgeContentParser.summarize()
 # print knowledgeContentParser.records
-# for content in knowledgeContentParser.contents:
-#     print content
+
+# s = '\xe8\x91\xa1\xe8\x90\x84\xe9\x85\x92\xe4\xb8\x8e\xe9\xa3\x9f\xe7\x89\xa9\xe7\x9a\x84\xe6\x90\xad\xe9\x85\x8d\xe5\x8e\x9f\xe5\x88\x99'
+# y=u'abc | cde'
+# print type(s)
+# print s
+# print y.split("|")[0]
+# print type(unicode(s, 'utf-8'))
+# print unicode(s, 'utf-8')
+# print isinstance(response.read(), unicode)
