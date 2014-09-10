@@ -78,7 +78,7 @@ def sina_login():
                 'returntype' : 'META'
     }
     username = 'zhjsoftware@gmail.com'
-    pwd = '870912zz'
+    pwd = 'password'
     url = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.3.18)'
     try:
         servertime, nonce = get_servertime()
