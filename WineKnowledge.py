@@ -317,29 +317,29 @@ header = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML, 
           'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
           'Connection': 'close',
           'Referer': None}
-thread.start_new_thread(loadKnowledgeLink, (seedUrl1, knowledgeParser))
+# thread.start_new_thread(loadKnowledgeLink, (seedUrl1, knowledgeParser))
 # thread.start_new_thread(loadBrandLink, (seedUrl2, brandLinkParser))
-time.sleep(2)
-thread.start_new_thread(loadKnowledgeContent, (knowledgeContentParser,))
-while not knowledgeLastPage:
-    time.sleep(5)
+# time.sleep(2)
+# thread.start_new_thread(loadKnowledgeContent, (knowledgeContentParser,))
+# while not knowledgeLastPage:
+#     time.sleep(5)
 # thread.start_new_thread(loadBrandContent, (brandContentParser,))
 # while threading.activeCount() != 1:
 #     time.sleep(10)
 # while thread1Running:
 #     time.sleep(5)
 # print brandLinkQueue.qsize()
-with codecs.open("/home/jing/data/knowledge.txt", "a", 'utf-8') as knowledgeFile:
-    for record in knowledgeContentParser.records:
-        knowledgeFile.write(record)
-        knowledgeFile.write('\n')
+# with codecs.open("/home/jing/data/knowledge.txt", "a", 'utf-8') as knowledgeFile:
+#     for record in knowledgeContentParser.records:
+#         knowledgeFile.write(record)
+#         knowledgeFile.write('\n')
 # with codecs.open('/home/jing/data/brand.txt', 'a', 'utf-8') as brandFile:
 #     for record in brandContentParser.records:
 #         brandFile.write(record)
 #         brandFile.write('\n')
-# url = 'http://www.ncvop.com/post/1098.html'
+url = 'http://www.ncvop.com/post/10.html'
 # url = "http://www.ncvop.com/post/category/wine-knowledge"
-# req = urllib2.Request(url, headers=header)
+req = urllib2.Request(url, headers=header)
 # try:
 #     response = urllib2.urlopen(req)
 #     text = response.read()

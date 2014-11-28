@@ -1,5 +1,3 @@
-import base64
-
 __author__ = 'jing'
 
 import urllib2,urllib
